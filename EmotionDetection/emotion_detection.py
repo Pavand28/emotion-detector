@@ -1,4 +1,5 @@
 import requests
+import json
 
 
 def emotion_detector(text_to_analyse):
@@ -20,4 +21,30 @@ def emotion_detector(text_to_analyse):
         json=payload
     )
 
-    return response.text
+    if response.status_code == 400:
+        return {
+            "anger": None,
+            "disgust": None,
+            "fear": None,
+            "joy": None,
+            "sadness": None,
+            "dominant_emotion": None
+        }
+
+    data = json.loads(response.text)
+    emotions = data["emotionPredictions"][0]["emotion"]
+
+    scores = {
+        "anger": emotions["anger"],
+        "disgust": emotions["disgust"],
+        "fear": emotions["fear"],
+        "joy": emotions["joy"],
+        "sadness": emotions["sadness"]
+    }
+
+    dominant_emotion = max(scores, key=scores.get)
+
+    return {
+        **scores,
+        "dominant_emotion": dominant_emotion
+    }
