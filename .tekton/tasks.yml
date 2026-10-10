@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: cleanup
+spec:
+  workspaces:
+    - name: source
+  steps:
+    - name: remove-old-files
+      image: node:20
+      script: |
+        #!/bin/sh
+        set -eu
+        find /workspace/source -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: jest-test
+spec:
+  workspaces:
+    - name: source
+  steps:
+    - name: run-jest
+      image: node:20
+      workingDir: /workspace/source
+      script: |
+        #!/bin/sh
+        set -eu
+        npm install
+        npx jest --ci
